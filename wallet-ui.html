@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Wallet get()</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+
+    <script src="https://unpkg.com/credential-handler-polyfill@2.1.1/dist/credential-handler-polyfill.min.js"></script>
+    <script src="https://unpkg.com/web-credential-handler@1.0.1/dist/web-credential-handler.min.js"></script>
+</head>
+
+<script>
+
+    let event
+
+    async function handleEvent() {
+        event = await WebCredentialHandler.receiveCredentialEvent();
+        document.getElementById('event-request').innerHTML = JSON.stringify(event, null, 2);
+
+        if (event.type == 'credentialstore') {
+            document.getElementById('event-response').style = 'display:none;'
+        }
+    }
+
+    async function sendResponse() {
+        let data = 'success'
+
+        if (event.type != 'credentialstore') {
+            try {
+                data = JSON.parse(document.getElementById('event-response').value)
+            } catch (e) {
+                console.error('failed to prepare response to be sent.', e)
+                event.respondWith(Promise.resolve({dataType: 'Error', e}));
+                return
+            }
+        }
+
+        console.error('Successfully sent response back to server')
+        event.respondWith(Promise.resolve({dataType: 'VerifiablePresentation', data}));
+    }
+
+    async function sendError() {
+        event.respondWith(Promise.resolve({dataType: 'Response', data: 'operation cancelled by user'}))
+    }
+
+    function onDocReady(fn) {
+        if (document.readyState !== 'loading') {
+            fn();
+        } else {
+            document.addEventListener('DOMContentLoaded', fn);
+        }
+    }
+
+    function copyToClipboard(id) {
+        var range = document.createRange();
+        range.selectNode(document.getElementById(id));
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+        document.execCommand("copy");
+        window.getSelection().removeAllRanges();
+    }
+
+    onDocReady(() => {
+        credentialHandlerPolyfill.loadOnce().then(function () {
+            handleEvent()
+        });
+    })
+
+</script>
+<body>
+<div class="container">
+    <h5> Credential Event Request</h5>
+    <div class="card-panel prettyprint" style="margin: 10px">
+        <div id="event-request"></div>
+        <div><a href="javascript:copyToClipboard('event-request');" style="float: right">Copy to Clipboard</a></div>
+    </div>
+
+    <div style="margin-top: 50px"></div>
+    <h5> Credential Event Response</h5>
+
+    <div class="card-panel prettyprint" style="margin: 10px">
+
+    <textarea id="event-response" style="width: 100%; height: 150px">
+
+    </textarea>
+
+        <button onclick="sendResponse()" class="waves-effect waves-light btn">Send Response</button>
+        <button onclick="sendError()" class="waves-effect waves-light btn">Cancel</button>
+    </div>
+</div>
+</body>
+</html>

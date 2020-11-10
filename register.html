@@ -1,0 +1,33 @@
+<html lang="en">
+<head>
+    <title>Minimal Demo Wallet</title>
+    <meta charset="utf-8">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+
+    <script src="https://unpkg.com/credential-handler-polyfill@2.1.1/dist/credential-handler-polyfill.min.js"></script>
+    <script src="https://unpkg.com/web-credential-handler@1.0.1/dist/web-credential-handler.min.js"></script>
+
+</head>
+<body>
+
+<div class="container">
+    <div class="card-panel">
+        <h5>Wallet Bridge</h5>
+        <p>
+            By clicking 'Accept' on page load, you have registered this page with your
+            browser, and now it can act as a test wallet bridge.
+        </p>
+    </div>
+</div>
+
+<script type="module">
+    console.log('Registering wallet...');
+
+    import {WalletBridge} from './wallet.js';
+
+    new WalletBridge().installHandlers('demo-wallet-user')
+
+</script>
+</body>
+</html>
